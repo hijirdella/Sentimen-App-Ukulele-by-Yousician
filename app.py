@@ -9,28 +9,28 @@ model = joblib.load('Linear_SVM_Original_model_Ukulele by Yousician.pkl')
 vectorizer = joblib.load('tfidf_vectorizer_Ukulele by Yousician.pkl')
 label_encoder = joblib.load('label_encoder_Ukulele by Yousician.pkl')
 
-# --- Judul App ---
-st.title("🎵 Sentiment App – Ukulele by Yousician")
+# --- Judul Aplikasi ---
+st.title("🎵 Aplikasi Analisis Sentimen – Ukulele by Yousician")
 
 # --- Pilih Mode Input ---
-st.header("🎯 Pilih Metode Input")
-input_mode = st.radio("Mode Input:", ["📝 Input Manual", "📁 Upload CSV"])
+st.header("📌 Pilih Metode Input")
+input_mode = st.radio("Pilih salah satu:", ["📝 Input Manual", "📁 Upload File CSV"])
 
 # ========================================
-# 📌 MODE 1: INPUT MANUAL
+# MODE 1: INPUT MANUAL
 # ========================================
 if input_mode == "📝 Input Manual":
-    st.subheader("🧾 Masukkan 1 Review Pengguna")
+    st.subheader("🧾 Masukkan Satu Review Pengguna")
 
     name = st.text_input("👤 Nama Pengguna:")
-    star_rating = st.selectbox("⭐ Bintang Rating:", [1, 2, 3, 4, 5])
-    user_review = st.text_area("💬 Review:")
+    star_rating = st.selectbox("⭐ Rating Bintang:", [1, 2, 3, 4, 5])
+    user_review = st.text_area("💬 Tulis Review Pengguna:")
 
     wib = pytz.timezone("Asia/Jakarta")
     now_wib = datetime.now(wib)
 
-    review_day = st.date_input("📅 Tanggal Submit:", value=now_wib.date())
-    review_time = st.time_input("⏰ Waktu Submit:", value=now_wib.time())
+    review_day = st.date_input("📅 Tanggal:", value=now_wib.date())
+    review_time = st.time_input("⏰ Waktu:", value=now_wib.time())
 
     review_datetime = datetime.combine(review_day, review_time)
     review_datetime_wib = wib.localize(review_datetime)
@@ -52,44 +52,48 @@ if input_mode == "📝 Input Manual":
                 "predicted_sentiment": label
             }])
 
-            st.success(f"✅ Sentimen diprediksi sebagai: **{label.upper()}**")
+            st.success(f"✅ Sentimen terdeteksi: **{label.upper()}**")
             st.dataframe(result_df)
 
             csv_manual = result_df.to_csv(index=False).encode('utf-8')
             st.download_button(
-                label="📥 Download Hasil sebagai CSV",
+                label="📥 Unduh Hasil sebagai CSV",
                 data=csv_manual,
-                file_name="manual_review_prediction.csv",
+                file_name="hasil_prediksi_manual.csv",
                 mime="text/csv"
             )
 
 # ========================================
-# 📁 MODE 2: UPLOAD CSV
+# MODE 2: UPLOAD CSV
 # ========================================
 else:
-    st.subheader("📤 Upload File CSV Review")
-    uploaded_file = st.file_uploader("Pilih file CSV (harus memiliki kolom 'review')", type=['csv'])
+    st.subheader("📤 Unggah File CSV Review")
+    uploaded_file = st.file_uploader(
+        "Pilih file CSV (harus memiliki kolom: 'name', 'star_rating', 'date', 'review')",
+        type=['csv']
+    )
 
     if uploaded_file:
         try:
             df = pd.read_csv(uploaded_file)
 
-            if 'review' not in df.columns:
-                st.error("❌ File harus memiliki kolom 'review'.")
+            required_cols = {'name', 'star_rating', 'date', 'review'}
+            if not required_cols.issubset(df.columns):
+                st.error(f"❌ File harus memiliki kolom: {', '.join(required_cols)}.")
             else:
                 X_vec = vectorizer.transform(df['review'].fillna(""))
                 y_pred = model.predict(X_vec)
                 df['predicted_sentiment'] = label_encoder.inverse_transform(y_pred)
 
                 st.success("✅ Prediksi berhasil!")
-                st.dataframe(df[['review', 'predicted_sentiment']].head())
+                st.dataframe(df[['name', 'star_rating', 'date', 'review', 'predicted_sentiment']].head())
 
                 csv_result = df.to_csv(index=False).encode('utf-8')
                 st.download_button(
-                    label="📥 Download Hasil CSV",
+                    label="📥 Unduh Hasil CSV",
                     data=csv_result,
-                    file_name="predicted_reviews.csv",
+                    file_name="hasil_prediksi_csv.csv",
                     mime="text/csv"
                 )
         except Exception as e:
-            st.error(f"❌ Terjadi error saat membaca file: {e}")
+            st.error(f"❌ Terjadi kesalahan saat membaca file: {e}")
