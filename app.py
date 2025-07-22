@@ -1,30 +1,8 @@
 import streamlit as st
 import joblib
 import pandas as pd
-import re
-import string
 from datetime import datetime
 import pytz
-import nltk
-from nltk.tokenize import word_tokenize
-from nltk.corpus import stopwords
-from nltk.stem import PorterStemmer
-
-# Download resource NLTK
-nltk.download('punkt')
-nltk.download('stopwords')
-
-# Preprocessing
-stop_words = set(stopwords.words('english'))
-stemmer = PorterStemmer()
-
-def preprocess(text):
-    text = text.lower()
-    text = re.sub(r'\d+', '', text)
-    text = text.translate(str.maketrans('', '', string.punctuation))
-    tokens = word_tokenize(text)
-    filtered_tokens = [stemmer.stem(word) for word in tokens if word not in stop_words]
-    return ' '.join(filtered_tokens)
 
 # --- Load model dan komponen ---
 model = joblib.load('Linear_SVM_Original_model_Ukulele by Yousician.pkl')
@@ -34,15 +12,15 @@ label_encoder = joblib.load('label_encoder_Ukulele by Yousician.pkl')
 # --- Judul App ---
 st.title("🎵 Sentiment App – Ukulele by Yousician")
 
-# --- Pilih Mode ---
-st.header("Pilih Metode Input")
+# --- Pilih Mode Input ---
+st.header("🎯 Pilih Metode Input")
 input_mode = st.radio("Mode Input:", ["📝 Input Manual", "📁 Upload CSV"])
 
 # ========================================
 # 📌 MODE 1: INPUT MANUAL
 # ========================================
 if input_mode == "📝 Input Manual":
-    st.subheader("Masukkan 1 Review Pengguna")
+    st.subheader("🧾 Masukkan 1 Review Pengguna")
 
     name = st.text_input("👤 Nama Pengguna:")
     star_rating = st.selectbox("⭐ Bintang Rating:", [1, 2, 3, 4, 5])
@@ -58,12 +36,11 @@ if input_mode == "📝 Input Manual":
     review_datetime_wib = wib.localize(review_datetime)
     review_date_str = review_datetime_wib.strftime("%Y-%m-%d %H:%M")
 
-    if st.button("Prediksi Sentimen"):
+    if st.button("🚀 Prediksi Sentimen"):
         if user_review.strip() == "":
-            st.warning("🚨 Silakan isi review terlebih dahulu.")
+            st.warning("⚠️ Silakan isi review terlebih dahulu.")
         else:
-            cleaned_text = preprocess(user_review)
-            vec = vectorizer.transform([cleaned_text])
+            vec = vectorizer.transform([user_review])
             pred = model.predict(vec)
             label = label_encoder.inverse_transform(pred)[0]
 
@@ -90,7 +67,7 @@ if input_mode == "📝 Input Manual":
 # 📁 MODE 2: UPLOAD CSV
 # ========================================
 else:
-    st.subheader("Upload File CSV Review")
+    st.subheader("📤 Upload File CSV Review")
     uploaded_file = st.file_uploader("Pilih file CSV (harus memiliki kolom 'review')", type=['csv'])
 
     if uploaded_file:
@@ -100,8 +77,7 @@ else:
             if 'review' not in df.columns:
                 st.error("❌ File harus memiliki kolom 'review'.")
             else:
-                df['cleaned_review'] = df['review'].fillna("").apply(preprocess)
-                X_vec = vectorizer.transform(df['cleaned_review'])
+                X_vec = vectorizer.transform(df['review'].fillna(""))
                 y_pred = model.predict(X_vec)
                 df['predicted_sentiment'] = label_encoder.inverse_transform(y_pred)
 
