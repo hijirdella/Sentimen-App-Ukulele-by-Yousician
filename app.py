@@ -59,7 +59,7 @@ if input_mode == "📝 Input Manual":
             st.download_button(
                 label="📥 Unduh Hasil sebagai CSV",
                 data=csv_manual,
-                file_name="hasil_prediksi_manual.csv",
+                file_name="hasil_prediksi_manual_ukulele_by_yousician.csv",
                 mime="text/csv"
             )
 
@@ -92,7 +92,7 @@ else:
                 st.download_button(
                     label="📥 Unduh Hasil CSV",
                     data=csv_result,
-                    file_name="hasil_prediksi_csv.csv",
+                    file_name="hasil_prediksi_ukulele_by_yousician.csv",
                     mime="text/csv"
                 )
         except Exception as e:
