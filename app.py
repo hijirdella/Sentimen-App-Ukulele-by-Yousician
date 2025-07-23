@@ -15,7 +15,8 @@ label_encoder = joblib.load('label_encoder_Ukulele_by_Yousician.pkl')
 
 # === Complaint keywords ===
 complaint_keywords = [
-    'ads', 'too many ads', 'too much ads', 'advertisement', 'popup ad', 'annoying ads', 'awful ads', 'so many ads',
+    'ads', 'ad', 'too many ads', 'too much ads', 'advertisement', 'popup ad', 'annoying', 'awful ads', 'so many ads',
+    'expensive', 'suck', 'horrible', 'disaster', 'terrible', 'trouble','mistake',
     'delay', 'lag', 'slow', 'freeze', 'unresponsive', 'stuck', 'hang', 'load time', 'takes forever',
     'bug', 'glitch', 'crash', 'error', 'not working', "doesn't work", "didn't work", 'fail to load',
     'keeps crashing', 'stopped working', 'broken', 'issue', 'problem', "won't open", 'black screen',
