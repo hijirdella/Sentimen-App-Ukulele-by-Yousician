@@ -1,14 +1,34 @@
+# Adjusted for Ukulele by Yousician
 import streamlit as st
 import joblib
 import pandas as pd
 import matplotlib.pyplot as plt
 import pytz
 from datetime import datetime
+import numpy as np
+from scipy import sparse
 
 # === Load model dan komponen ===
-model = joblib.load('Linear_SVM_Original_model_Ukulele by Yousician.pkl')
-vectorizer = joblib.load('tfidf_vectorizer_Ukulele by Yousician.pkl')
-label_encoder = joblib.load('label_encoder_Ukulele by Yousician.pkl')
+model = joblib.load('Ridge_Classifier_Original_model_Ukulele_by_Yousician.pkl')
+vectorizer = joblib.load('tfidf_vectorizer_Ukulele_by_Yousician.pkl')
+label_encoder = joblib.load('label_encoder_Ukulele_by_Yousician.pkl')
+
+# === Complaint keywords ===
+complaint_keywords = [
+    'ads', 'too many ads', 'too much ads', 'advertisement', 'popup ad', 'annoying ads', 'awful ads', 'so many ads',
+    'delay', 'lag', 'slow', 'freeze', 'unresponsive', 'stuck', 'hang', 'load time', 'takes forever',
+    'bug', 'glitch', 'crash', 'error', 'not working', "doesn't work", "didn't work", 'fail to load',
+    'keeps crashing', 'stopped working', 'broken', 'issue', 'problem', "won't open", 'black screen',
+    'remove note bug', 'late sounds', 'incompatible', 'server down', 'wasnt working', "wasn't working",
+    'ruin', 'frustrating', 'useless', 'disappointed', 'waste of time', 'terrible experience',
+    'banned', 'complain', 'gone', 'no longer', 'not responding', "can't use", 'hard to use',
+    'disgusting', 'boring', 'noob', 'hard', 'annoying', 'money hungry',
+    'i dont like it', "i don't like", 'i dont want', "i don't want", "it didnt", "it didn't"
+]
+
+def detect_complaint(text):
+    text = text.lower()
+    return int(any(kw in text for kw in complaint_keywords))
 
 # === Judul Aplikasi ===
 st.title("🎵 Aplikasi Analisis Sentimen – Ukulele by Yousician")
@@ -47,7 +67,9 @@ if input_mode == "📝 Input Manual":
             st.warning("⚠️ Silakan isi review terlebih dahulu.")
         else:
             vec = vectorizer.transform([user_review])
-            pred = model.predict(vec)
+            flag = np.array([[detect_complaint(user_review)]])
+            final_vec = sparse.hstack([vec, sparse.csr_matrix(flag)])
+            pred = model.predict(final_vec)
             label = label_encoder.inverse_transform(pred)[0]
 
             result_df = pd.DataFrame([{
@@ -65,7 +87,7 @@ if input_mode == "📝 Input Manual":
             st.download_button(
                 label="📅 Unduh Hasil sebagai CSV",
                 data=csv_manual,
-                file_name="hasil_prediksi_manual_ukulele_by_yousician.csv",
+                file_name="hasil_prediksi_manual_ukulele.csv",
                 mime="text/csv"
             )
 
@@ -88,9 +110,12 @@ else:
             if not required_cols.issubset(df.columns):
                 st.error(f"❌ File harus memiliki kolom: {', '.join(required_cols)}.")
             else:
-                # Prediksi
-                X_vec = vectorizer.transform(df['review'].fillna(""))
-                y_pred = model.predict(X_vec)
+                df['review'] = df['review'].fillna("")
+                X_vec = vectorizer.transform(df['review'])
+                flags = df['review'].apply(detect_complaint).values.reshape(-1, 1)
+                final_vec = sparse.hstack([X_vec, sparse.csr_matrix(flags)])
+
+                y_pred = model.predict(final_vec)
                 df['predicted_sentiment'] = label_encoder.inverse_transform(y_pred)
 
                 st.success("✅ Prediksi berhasil!")
@@ -164,7 +189,7 @@ else:
                 st.download_button(
                     label="📅 Unduh Hasil CSV",
                     data=csv_result,
-                    file_name="hasil_prediksi_ukulele_by_yousician.csv",
+                    file_name="hasil_prediksi_ukulele.csv",
                     mime="text/csv"
                 )
 
