@@ -56,7 +56,7 @@ if input_mode == "📝 Input Manual":
     star_rating = st.selectbox("⭐ Rating Bintang:", [1, 2, 3, 4, 5])
     user_review = st.text_area("💬 Tulis Review Pengguna:")
 
-    review_day = st.date_input("🗕️ Tanggal:", value=now_wib.date())
+    review_day = st.date_input("📅 Tanggal:", value=now_wib.date())
     review_time = st.time_input("⏰ Waktu:", value=now_wib.time())
 
     review_datetime = datetime.combine(review_day, review_time)
