@@ -9,7 +9,7 @@ import numpy as np
 from scipy import sparse
 
 # === Load model dan komponen ===
-model = joblib.load('Ridge_Classifier_Original_model_Ukulele_by_Yousician.pkl')
+model = joblib.load('Logistic_Regression_Original_model_Ukulele_by_Yousician.pkl')
 vectorizer = joblib.load('tfidf_vectorizer_Ukulele_by_Yousician.pkl')
 label_encoder = joblib.load('label_encoder_Ukulele_by_Yousician.pkl')
 
